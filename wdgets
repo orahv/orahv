@@ -1,0 +1,241 @@
+<!-- In your widget.php for the Welcome Widget -->
+<script>
+(function() {
+    var widgetContainer = document.createElement('div');
+    widgetContainer.style.padding = '10px';
+    widgetContainer.style.border = '1px solid #ccc';
+    widgetContainer.style.backgroundColor = 'blue';
+    widgetContainer.style.width = '200px';
+    widgetContainer.style.textAlign = 'center';
+
+    var messageElement = document.createElement('p');
+    messageElement.textContent = 'Welcome!';
+    messageElement.style.fontSize = '18px';
+    messageElement.style.margin = '0';
+    messageElement.style.fontWeight = 'bold';
+    widgetContainer.appendChild(messageElement);
+
+    var dateElement = document.createElement('p');
+    dateElement.textContent = 'Current Date & Time: ' + new Date().toLocaleString();
+    dateElement.style.fontSize = '16px';
+    dateElement.style.margin = '0';
+    widgetContainer.appendChild(dateElement);
+
+    document.body.appendChild(widgetContainer);
+})();
+</script>
+
+<!-- In your network_widget.php for the Network Widget -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function() {
+    var widgetContainer = document.createElement('div');
+    widgetContainer.style.padding = '10px';
+    widgetContainer.style.border = '1px solid #ccc';
+    widgetContainer.style.backgroundColor = '#f9f9f9';
+    widgetContainer.style.width = '300px';
+    widgetContainer.style.textAlign = 'center';
+
+    var titleElement = document.createElement('h3');
+    titleElement.textContent = 'Network Device Status';
+    titleElement.style.margin = '0 0 10px';
+    widgetContainer.appendChild(titleElement);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 300;
+    widgetContainer.appendChild(canvas);
+
+    var deviceList = document.createElement('ul');
+    deviceList.style.listStyle = 'none';
+    deviceList.style.padding = '0';
+    widgetContainer.appendChild(deviceList);
+
+    fetch("network_scan.php?network=192.168.1&start=1&end=20")
+    .then(response => response.json())
+    .then(data => {
+        var ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Active Devices', 'Inactive Devices'],
+                datasets: [{
+                    data: [data.totalActive, data.totalInactive],
+                    backgroundColor: ['#36a2eb', '#ff6384']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+
+        data.activeDevices.forEach(device => {
+            var listItem = document.createElement('li');
+            listItem.textContent = device.name + ' (' + device.ip + ')';
+            deviceList.appendChild(listItem);
+        });
+    })
+    .catch(error => console.error('Error fetching data:', error));
+
+    document.body.appendChild(widgetContainer);
+})();
+</script>
+
+<!-- In your ip_scan_widget.php for the IP Scan Widget -->
+<script>
+(function() {
+    var widgetContainer = document.createElement('div');
+    widgetContainer.style.padding = '10px';
+    widgetContainer.style.border = '1px solid #ccc';
+    widgetContainer.style.backgroundColor = '#f9f9f9';
+    widgetContainer.style.width = '100%';
+    widgetContainer.style.maxWidth = '500px';
+    widgetContainer.style.textAlign = 'center';
+    widgetContainer.style.margin = '20px auto';
+
+    var titleElement = document.createElement('h3');
+    titleElement.textContent = 'Network IP Scanner';
+    titleElement.style.margin = '0 0 10px';
+    widgetContainer.appendChild(titleElement);
+
+    var loadingMessage = document.createElement('p');
+    loadingMessage.textContent = 'Scanning network...';
+    widgetContainer.appendChild(loadingMessage);
+
+    var table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '10px';
+
+    var headerRow = document.createElement('tr');
+    ['IP Address', 'Hostname'].forEach(headerText => {
+        var th = document.createElement('th');
+        th.textContent = headerText;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.backgroundColor = '#f2f2f2';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    fetch("ip_scan.php?network=192.168.1&start=1&end=20")
+    .then(response => response.json())
+    .then(data => {
+        loadingMessage.style.display = 'none';
+        if (data.devices && data.devices.length > 0) {
+            data.devices.forEach(device => {
+                var row = document.createElement('tr');
+                var ipCell = document.createElement('td');
+                ipCell.textContent = device.ip;
+                ipCell.style.border = '1px solid #ddd';
+                ipCell.style.padding = '8px';
+                row.appendChild(ipCell);
+                var hostnameCell = document.createElement('td');
+                hostnameCell.textContent = device.hostname;
+                hostnameCell.style.border = '1px solid #ddd';
+                hostnameCell.style.padding = '8px';
+                row.appendChild(hostnameCell);
+                table.appendChild(row);
+            });
+        } else {
+            var noDevicesRow = document.createElement('tr');
+            var noDevicesCell = document.createElement('td');
+            noDevicesCell.textContent = 'No available devices found';
+            noDevicesCell.colSpan = 2;
+            noDevicesCell.style.textAlign = 'center';
+            noDevicesCell.style.padding = '8px';
+            noDevicesRow.appendChild(noDevicesCell);
+            table.appendChild(noDevicesRow);
+        }
+        widgetContainer.appendChild(table);
+    })
+    .catch(error => {
+        loadingMessage.textContent = 'Error scanning network.';
+        console.error(error);
+    });
+
+    document.body.appendChild(widgetContainer);
+})();
+</script>
+
+<!-- In your data_usage_widget.php for the Data Usage Widget -->
+<script>
+(function() {
+    var widgetContainer = document.createElement('div');
+    widgetContainer.style.padding = '10px';
+    widgetContainer.style.border = '1px solid #ccc';
+    widgetContainer.style.backgroundColor = '#f9f9f9';
+    widgetContainer.style.width = '100%';
+    widgetContainer.style.maxWidth = '600px';
+    widgetContainer.style.textAlign = 'center';
+    widgetContainer.style.margin = '20px auto';
+
+    var titleElement = document.createElement('h3');
+    titleElement.textContent = 'Network Device Data Usage';
+    titleElement.style.margin = '0 0 10px';
+    widgetContainer.appendChild(titleElement);
+
+    var loadingMessage = document.createElement('p');
+    loadingMessage.textContent = 'Scanning network and fetching data usage...';
+    widgetContainer.appendChild(loadingMessage);
+
+    var table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '10px';
+
+    var headerRow = document.createElement('tr');
+    ['IP Address', 'Hostname', 'Data Usage (Bytes)'].forEach(headerText => {
+        var th = document.createElement('th');
+        th.textContent = headerText;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.backgroundColor = '#f2f2f2';
+        th.style.textAlign = 'left';
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    fetch("data_usage_scan.php?network=192.168.1&start=1&end=20")
+    .then(response => response.json())
+    .then(data => {
+        loadingMessage.style.display = 'none';
+        if (data.devices && data.devices.length > 0) {
+            data.devices.forEach(device => {
+                var row = document.createElement('tr');
+                var ipCell = document.createElement('td');
+                ipCell.textContent = device.ip;
+                ipCell.style.border = '1px solid #ddd';
+                ipCell.style.padding = '8px';
+                row.appendChild(ipCell);
+                var hostnameCell = document.createElement('td');
+                hostnameCell.textContent = device.hostname;
+                hostnameCell.style.border = '1px solid #ddd';
+                hostnameCell.style.padding = '8px';
+                row.appendChild(hostnameCell);
+                var usageCell = document.createElement('td');
+                usageCell.textContent = device.dataUsage !== 'N/A' ? device.dataUsage : 'Not Available';
+                usageCell.style.border = '1px solid #ddd';
+                usageCell.style.padding = '8px';
+                row.appendChild(usageCell);
+                table.appendChild(row);
+            });
+        } else {
+            var noDevicesRow = document.createElement('tr');
+            var noDevicesCell = document.createElement('td');
+            noDevicesCell.textContent = 'No available devices found';
+            noDevicesCell.colSpan = 3;
+            noDevicesCell.style.textAlign = 'center';
+            noDevicesCell.style.padding = '8px';
+            noDevicesRow.appendChild(noDevicesCell);
+            table.appendChild(noDevicesRow);
+        }
+        widgetContainer.appendChild(table);
+    })
+    .catch(error => {
+        loadingMessage.textContent = 'Error fetching data usage.';
+        console.error(error);
+    });
+
+    document.body.appendChild(widgetContainer);
+})();
+</script>
