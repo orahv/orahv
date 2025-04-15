@@ -16,7 +16,7 @@ Hi there! I'm a **Software Developer** passionate about building **cross-platfor
 ### 🌐 Let's Connect!
  
 - 📧 Email: orahv@
-- 🐙 GitHub:  GitHub](https://github.com/orahv (#) 
+- 🐙 GitHub: https://github.com/orahv  
  
 🔧 Currently working on exciting full-stack projects  
 📈 Open to freelance gigs or collaborations  
